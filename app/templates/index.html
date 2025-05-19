@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>TODO Application</h1>
+    
+    <!-- Create TODO Form -->
+    <div class="form-container">
+        <h2>Add New TODO</h2>
+        <form id="create-todo-form">
+            <div>
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <textarea id="description" name="description"></textarea>
+            </div>
+            <button type="submit">Add TODO</button>
+        </form>
+    </div>
+    
+    <!-- TODOs List -->
+    <h2>Your TODOs</h2>
+    <div id="loading">Loading...</div>
+    <ul id="todo-list" class="todo-list"></ul>
+    
+    <script src="{{ url_for('static', filename='js/todos.js') }}"></script>
+</body>
+</html>

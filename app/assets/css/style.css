@@ -1,0 +1,144 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"], 
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.todo-list {
+    list-style: none;
+    padding: 0;
+}
+
+.todo-item {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.todo-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.todo-description {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.todo-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.todo-completed {
+    background-color: #e8f5e9;
+    border-left: 5px solid #4caf50;
+}
+
+.todo-completed .todo-title {
+    text-decoration: line-through;
+    color: #4caf50;
+}
+
+.edit-form {
+    margin-top: 10px;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    display: none;
+}
+
+.edit-button {
+    background-color: #f39c12;
+}
+
+.edit-button:hover {
+    background-color: #e67e22;
+}
+
+.delete-button {
+    background-color: #e74c3c;
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+}
+
+.toggle-button {
+    background-color: #2ecc71;
+}
+
+.toggle-button:hover {
+    background-color: #27ae60;
+}
+
+.cancel-button {
+    background-color: #95a5a6;
+}
+
+.cancel-button:hover {
+    background-color: #7f8c8d;
+}
+
+.timestamp {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
