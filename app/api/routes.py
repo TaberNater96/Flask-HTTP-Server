@@ -1,7 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, abort
 from marshmallow import ValidationError
-from app.models import db, Todo
 from ..schemas import todo_schema, todos_schema # schemas for serialization/deserialization
+from ..services.todo_db_service import TodoService
 
 api_bp = Blueprint('api', __name__)
 
@@ -15,8 +15,8 @@ def get_todos():
     Returns:
         tuple: A Flask Response object containing the JSON list of todos and an HTTP status code 200 (OK).
     """
-    todos = Todo.query.all()           # fetch all Todo records from the database
-    result = todos_schema.dump(todos)  # serialize the list of Todo objects into a JSON-compatible format
+    todos = TodoService.get_all_todos() # fetch all Todo records from the database
+    result = todos_schema.dump(todos)   # serialize the list of Todo objects into a JSON-compatible format
     return jsonify(result), 200
 
 @api_bp.route('/todos/<int:todo_id>', methods=['GET'])
@@ -33,8 +33,11 @@ def get_todo(todo_id):
         tuple: A Flask Response object containing the JSON representation of the Todo item and an HTTP status code 200 (OK), or a 404 error response
                if the item is not found.
     """
-    todo = Todo.query.get_or_404(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
-    result = todo_schema.dump(todo)        # serialize the Todo object into a JSON-compatible format
+    todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
+    if not todo:
+        abort(404, description="Todo item not found")
+        
+    result = todo_schema.dump(todo)             # serialize the Todo object into a JSON-compatible format
     return jsonify(result), 200
 
 @api_bp.route('/todos', methods=['POST'])
@@ -56,17 +59,7 @@ def create_todo():
     try:
         # Validate and deserialize the input JSON data against the todo_schema
         todo_data = todo_schema.load(json_data)
-        
-        # Create a new Todo model instance with the validated data
-        new_todo = Todo(
-            title=todo_data['title'],
-            description=todo_data.get('description', ''),  # default to empty string if not provided
-            completed=todo_data.get('completed', False)    # default to False if not provided
-        )
-        
-        # Insert validated data into database
-        db.session.add(new_todo)
-        db.session.commit()
+        new_todo = TodoService.create_todo(todo_data)
         
         # Serialize the newly created Todo object for the response back to client
         result = todo_schema.dump(new_todo)
@@ -92,7 +85,7 @@ def update_todo(todo_id):
         tuple: A Flask Response object containing the JSON representation of the updated Todo item and an HTTP status code 200 (OK), or an error response 
         (404 if not found, 400 if input is invalid/missing).
     """
-    todo = Todo.query.get_or_404(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
+    todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
     json_data = request.get_json()
     
     if not json_data:
@@ -101,19 +94,10 @@ def update_todo(todo_id):
     try:
         # Validate and deserialize input, allowing partial updates (only fields present in json_data are processed)
         todo_data = todo_schema.load(json_data, partial=True)
+        updated_todo = TodoService.update_todo(todo, todo_data)
         
-        # Update the Todo item's attributes if they are present in the validated data
-        if 'title' in todo_data:
-            todo.title = todo_data['title']
-        if 'description' in todo_data:
-            todo.description = todo_data['description']
-        if 'completed' in todo_data:
-            todo.completed = todo_data['completed']
-        
-        db.session.commit()
-        
-        # Serialize the updated Todo object for the response
-        result = todo_schema.dump(todo)
+        # Serialize the updated Todo object for the response back to client
+        result = todo_schema.dump(updated_todo)
         return jsonify(result), 200
         
     except ValidationError as err:
@@ -132,7 +116,9 @@ def delete_todo(todo_id):
     Returns:
         tuple: A Flask Response object containing a success message and an HTTP status code 200 (OK), or a 404 error response if the item is not found.
     """
-    todo = Todo.query.get_or_404(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
-    db.session.delete(todo)
-    db.session.commit()
+    todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
+    if not todo:
+        abort(404, description="Todo item not found")
+        
+    TodoService.delete_todo(todo)
     return jsonify({'message': 'Todo deleted'}), 200
