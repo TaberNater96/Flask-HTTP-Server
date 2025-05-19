@@ -77,8 +77,9 @@ Flask HTTP Server/
 │   │   ├── base.html
 │   │   └── index.html
 │   │
-│   └── services/               # (Optional) Business logic layer
+│   └── services/               # Business logic layer
 │       ├── __init__.py
+│       ├── auth_service.py
 │       └── todo_service.py
 │
 ├── migrations/                 # Database migration scripts (Flask-Migrate/Alembic)
