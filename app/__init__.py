@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
@@ -34,6 +34,6 @@ def create_app(config_name=None):
     
     @app.route('/')
     def index():
-        return 'Welcome to the TODO API! Visit /api/todos to get started.'
+        return render_template('index.html') 
     
     return app

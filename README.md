@@ -61,7 +61,7 @@ Flask HTTP Server/
 ├── app/                        # Main application package
 │   ├── __init__.py             # Initializes the Flask app, extensions, and Blueprints
 │   ├── models.py               # SQLAlchemy database models
-│   ├── schemas.py              # (Optional) Marshmallow schemas for serialization/validation
+│   ├── schemas.py              # Marshmallow schemas for serialization/validation
 │   │
 │   ├── api/                    # Blueprint for API routes
 │   │   ├── __init__.py
