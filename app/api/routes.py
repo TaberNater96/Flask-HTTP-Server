@@ -57,9 +57,12 @@ def create_todo():
         return jsonify({"message": "No input data provided"}), 400
         
     try:
-        # Validate and deserialize the input JSON data against the todo_schema
-        todo_data = todo_schema.load(json_data)
-        new_todo = TodoService.create_todo(todo_data)
+        # Validate and deserialize the input JSON data against the todo_schema, where todo_data here is a dictionary if validation passes
+        # For create, we expect a full object, so no partial=True
+        new_todo_obj = todo_schema.load(json_data) # this will be a Todo instance due to @post_load
+        
+        # The service method now expects the Todo object directly
+        new_todo = TodoService.create_todo(new_todo_obj)
         
         # Serialize the newly created Todo object for the response back to client
         result = todo_schema.dump(new_todo)
@@ -92,9 +95,11 @@ def update_todo(todo_id):
         return jsonify({"message": "No input data provided"}), 400
     
     try:
-        # Validate and deserialize input, allowing partial updates (only fields present in json_data are processed)
-        todo_data = todo_schema.load(json_data, partial=True)
-        updated_todo = TodoService.update_todo(todo, todo_data)
+        # Validate and deserialize input, allowing partial updates, this will be a Todo instance with validated fields that were present in json_data
+        validated_partial_obj = todo_schema.load(json_data, partial=True)
+        
+        # Pass the existing ORM instance, the raw JSON data (to check for presence of keys), and the validated partial Todo object to the service.
+        updated_todo = TodoService.update_todo(todo, json_data, validated_partial_obj)
         
         # Serialize the updated Todo object for the response back to client
         result = todo_schema.dump(updated_todo)

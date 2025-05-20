@@ -3,8 +3,8 @@ from .models import Todo
 
 class TodoSchema(Schema):
     id = fields.Int(dump_only=True)  # read-only field (only included in serialized output)
-    title = fields.Str(required=True, validate=validate.Length(min=1, max=100))
-    description = fields.Str(required=False, validate=validate.Length(max=500))
+    title = fields.Str(required=True, validate=validate.Length(min=1, max=150))
+    description = fields.Str(required=False, allow_none=True, validate=validate.Length(max=500))
     completed = fields.Bool(required=False, default=False)
     created_at = fields.DateTime(dump_only=True)  # read-only
     updated_at = fields.DateTime(dump_only=True)  # read-only
