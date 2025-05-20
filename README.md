@@ -8,7 +8,7 @@ A simple TODO application built with Python, Flask, and PostgreSQL. This project
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [How It Works](#how-it-works)
-  - [Project Structure](#project-structure)
+  - [Project Structure Roadmap (In Progress)](#project-structure-roadmap-in-progress)
   - [Features](#features)
   - [Technology Stack](#technology-stack)
   - [Setup and Installation](#setup-and-installation)
@@ -44,7 +44,7 @@ The application follows a typical client-server architecture:
 7.  **Database (PostgreSQL):** Stores all TODO items and their attributes.
 8.  **HTTP Response:** The Flask API sends a JSON response back to the frontend, which then updates the UI accordingly.
 
-## Project Structure
+## Project Structure Roadmap (In Progress)
 
 ```
 Flask HTTP Server/
@@ -54,12 +54,12 @@ Flask HTTP Server/
 ├── .gitignore                  # Specifies intentionally untracked files for Git
 ├── Dockerfile                  # Instructions to build the Docker image for the app
 ├── README.md                   # This file
-├── config.py                   # Configuration settings (DevConfig, ProdConfig, etc.)
+├── config.py                   # Configuration settings (DevConfig, ProdConfig, logging, etc.)
 ├── requirements.txt            # List of Python dependencies
 ├── run.py                      # Script to run the Flask development server
 │
 ├── app/                        # Main application package
-│   ├── __init__.py             # Initializes the Flask app, extensions, and Blueprints
+│   ├── __init__.py             # Initializes the Flask app, extensions, Blueprints, and logging
 │   ├── models.py               # SQLAlchemy database models
 │   ├── schemas.py              # Marshmallow schemas for serialization/validation
 │   │
@@ -81,6 +81,8 @@ Flask HTTP Server/
 │       ├── __init__.py
 │       ├── auth_service.py
 │       └── todo_db_service.py
+│
+├── logs/                       # Log files 
 │
 ├── migrations/                 # Database migration scripts (Flask-Migrate/Alembic)
 │   ├── versions/
