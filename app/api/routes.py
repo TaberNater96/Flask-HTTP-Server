@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, current_app
 from marshmallow import ValidationError
 from ..schemas import todo_schema, todos_schema # schemas for serialization/deserialization
 from ..services.todo_db_service import TodoService
@@ -15,8 +15,10 @@ def get_todos():
     Returns:
         tuple: A Flask Response object containing the JSON list of todos and an HTTP status code 200 (OK).
     """
+    current_app.logger.info("Fetching all Todo items.")
     todos = TodoService.get_all_todos() # fetch all Todo records from the database
     result = todos_schema.dump(todos)   # serialize the list of Todo objects into a JSON-compatible format
+    current_app.logger.debug(f"Returning {len(todos)} Todo items.")
     return jsonify(result), 200
 
 @api_bp.route('/todos/<int:todo_id>', methods=['GET'])
@@ -33,11 +35,14 @@ def get_todo(todo_id):
         tuple: A Flask Response object containing the JSON representation of the Todo item and an HTTP status code 200 (OK), or a 404 error response
                if the item is not found.
     """
+    current_app.logger.info(f"Fetching Todo item with ID: {todo_id}.")
     todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
     if not todo:
-        abort(404, description="Todo item not found")
+        current_app.logger.warning(f"Todo item with ID: {todo_id} not found.")
+        abort(404, description=f"Todo item with ID {todo_id} not found.")
         
-    result = todo_schema.dump(todo)             # serialize the Todo object into a JSON-compatible format
+    result = todo_schema.dump(todo) # serialize the Todo object into a JSON-compatible format
+    current_app.logger.debug(f"Returning Todo item: {result}")
     return jsonify(result), 200
 
 @api_bp.route('/todos', methods=['POST'])
@@ -52,25 +57,25 @@ def create_todo():
         tuple: A Flask Response object containing the JSON representation of the newly created Todo item and an HTTP status code 201 (Created), or an 
         error response with status code 400 (Bad Request) if input is invalid or missing.
     """
+    current_app.logger.info("Attempting to create a new Todo item.")
     json_data = request.get_json()
     if not json_data:
-        return jsonify({"message": "No input data provided"}), 400
+        current_app.logger.error("No input data provided for new Todo item.")
+        abort(400, description="No input data provided")
         
     try:
-        # Validate and deserialize the input JSON data against the todo_schema, where todo_data here is a dictionary if validation passes
-        # For create, we expect a full object, so no partial=True
-        new_todo_obj = todo_schema.load(json_data) # this will be a Todo instance due to @post_load
+        # Validate and deserialize input
+        new_todo_obj = todo_schema.load(json_data) # new_todo_obj is now a Todo ORM instance
+        current_app.logger.debug(f"Validated input data for new Todo: {json_data}")
         
-        # The service method now expects the Todo object directly
-        new_todo = TodoService.create_todo(new_todo_obj)
-        
-        # Serialize the newly created Todo object for the response back to client
-        result = todo_schema.dump(new_todo)
+        todo = TodoService.create_todo(new_todo_obj)
+        result = todo_schema.dump(todo)
+        current_app.logger.info(f"Successfully created Todo item with ID: {todo.id}")
         return jsonify(result), 201
         
     except ValidationError as err:
-        # Handle Marshmallow validation errors
-        return jsonify({"message": "Validation error", "errors": err.messages}), 400
+        current_app.logger.error(f"Validation error creating Todo item: {err.messages}")
+        return jsonify(err.messages), 400
 
 @api_bp.route('/todos/<int:todo_id>', methods=['PUT'])
 def update_todo(todo_id):
@@ -88,25 +93,31 @@ def update_todo(todo_id):
         tuple: A Flask Response object containing the JSON representation of the updated Todo item and an HTTP status code 200 (OK), or an error response 
         (404 if not found, 400 if input is invalid/missing).
     """
-    todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
+    current_app.logger.info(f"Attempting to update Todo item with ID: {todo_id}.")
+    todo_orm_instance = TodoService.get_todo_by_id(todo_id)
+    if not todo_orm_instance:
+        current_app.logger.warning(f"Todo item with ID: {todo_id} not found for update.")
+        abort(404, description=f"Todo item with ID {todo_id} not found.")
+        
     json_data = request.get_json()
-    
     if not json_data:
-        return jsonify({"message": "No input data provided"}), 400
+        current_app.logger.error(f"No input data provided for updating Todo item ID: {todo_id}.")
+        abort(400, description="No input data provided")
     
     try:
-        # Validate and deserialize input, allowing partial updates, this will be a Todo instance with validated fields that were present in json_data
-        validated_partial_obj = todo_schema.load(json_data, partial=True)
+        # Validate and deserialize input, the schema.load with partial=True will return a new Todo object with validated fields
+        validated_partial_obj = todo_schema.load(json_data, partial=True) # allows partial updates
+        current_app.logger.debug(f"Validated input data for updating Todo ID {todo_id}: {json_data}")
         
-        # Pass the existing ORM instance, the raw JSON data (to check for presence of keys), and the validated partial Todo object to the service.
-        updated_todo = TodoService.update_todo(todo, json_data, validated_partial_obj)
-        
-        # Serialize the updated Todo object for the response back to client
+        # Update todo item using the service
+        updated_todo = TodoService.update_todo(todo_orm_instance, json_data, validated_partial_obj)
         result = todo_schema.dump(updated_todo)
+        current_app.logger.info(f"Successfully updated Todo item with ID: {todo_id}.")
         return jsonify(result), 200
         
     except ValidationError as err:
-        return jsonify({"message": "Validation error", "errors": err.messages}), 400
+        current_app.logger.error(f"Validation error updating Todo item ID {todo_id}: {err.messages}")
+        return jsonify(err.messages), 400
 
 @api_bp.route('/todos/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
@@ -121,9 +132,12 @@ def delete_todo(todo_id):
     Returns:
         tuple: A Flask Response object containing a success message and an HTTP status code 200 (OK), or a 404 error response if the item is not found.
     """
-    todo = TodoService.get_todo_by_id(todo_id)  # fetch the Todo item by ID; abort with 404 if not found
+    current_app.logger.info(f"Attempting to delete Todo item with ID: {todo_id}.")
+    todo = TodoService.get_todo_by_id(todo_id)
     if not todo:
-        abort(404, description="Todo item not found")
+        current_app.logger.warning(f"Todo item with ID: {todo_id} not found for deletion.")
+        abort(404, description=f"Todo item with ID {todo_id} not found.")
         
     TodoService.delete_todo(todo)
-    return jsonify({'message': 'Todo deleted'}), 200
+    current_app.logger.info(f"Successfully deleted Todo item with ID: {todo_id}.")
+    return jsonify({"message": f"Todo item with ID {todo_id} deleted successfully"}), 200

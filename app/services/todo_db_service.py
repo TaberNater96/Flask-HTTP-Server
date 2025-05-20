@@ -1,5 +1,6 @@
 from app import db
 from app.models import Todo
+from flask import current_app
 
 class TodoService:
     """
@@ -15,6 +16,7 @@ class TodoService:
         Returns:
             list: A list of all Todo objects.
         """
+        current_app.logger.debug("TodoService: Retrieving all todos from DB.")
         return Todo.query.all()
     
     @staticmethod
@@ -28,6 +30,7 @@ class TodoService:
         Returns:
             Todo: The Todo object if found, otherwise None.
         """
+        current_app.logger.debug(f"TodoService: Retrieving todo with ID {todo_id} from DB.")
         return Todo.query.get(todo_id)
     
     @staticmethod
@@ -44,8 +47,10 @@ class TodoService:
         Returns:
             Todo: The newly created Todo object, now persisted with an ID.
         """
+        current_app.logger.debug(f"TodoService: Creating new todo: {new_todo_obj.title[:20]}...") # Log snippet of title
         db.session.add(new_todo_obj) 
         db.session.commit() 
+        current_app.logger.info(f"TodoService: Successfully created todo with ID {new_todo_obj.id}.")
         return new_todo_obj
     
     @staticmethod
@@ -66,14 +71,20 @@ class TodoService:
         Returns:
             Todo: The updated Todo ORM instance.
         """
+        current_app.logger.debug(f"TodoService: Updating todo with ID {todo_orm_instance.id}.")
+        updated_fields = []
         if 'title' in request_json_data:
             todo_orm_instance.title = validated_partial_obj.title
+            updated_fields.append('title')
         if 'description' in request_json_data:
             todo_orm_instance.description = validated_partial_obj.description
+            updated_fields.append('description')
         if 'completed' in request_json_data:
             todo_orm_instance.completed = validated_partial_obj.completed
+            updated_fields.append('completed')
             
         db.session.commit()
+        current_app.logger.info(f"TodoService: Successfully updated fields {updated_fields} for todo ID {todo_orm_instance.id}.")
         return todo_orm_instance
     
     @staticmethod
@@ -87,6 +98,9 @@ class TodoService:
         Returns:
             bool: True if the deletion was successful.
         """
+        todo_id = todo.id # Capture id before deletion
+        current_app.logger.debug(f"TodoService: Deleting todo with ID {todo_id}.")
         db.session.delete(todo)
         db.session.commit()
+        current_app.logger.info(f"TodoService: Successfully deleted todo with ID {todo_id}.")
         return True  # confirms successful deletion.
