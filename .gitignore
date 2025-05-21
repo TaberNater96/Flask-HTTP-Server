@@ -17,3 +17,7 @@ logs/
 # IDE and editor files
 .vscode/
 .idea/
+
+# Diagrams
+*.drawio
+.$Architecture Diagram.drawio.bkp
