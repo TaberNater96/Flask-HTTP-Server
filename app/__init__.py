@@ -11,7 +11,7 @@ def create_app(config_name=None):
     app = Flask(__name__)
     
     if not config_name:
-        config_name = os.environ.get('FLASK_ENV', 'development')
+        config_name = os.environ.get('FLASK_ENV', 'development') # defined in .env
 
     from config import config
     cfg = config.get(config_name)

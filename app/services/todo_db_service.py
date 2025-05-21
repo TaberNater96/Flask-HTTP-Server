@@ -47,7 +47,7 @@ class TodoService:
         Returns:
             Todo: The newly created Todo object, now persisted with an ID.
         """
-        current_app.logger.debug(f"TodoService: Creating new todo: {new_todo_obj.title[:20]}...") # Log snippet of title
+        current_app.logger.debug(f"TodoService: Creating new todo: {new_todo_obj.title[:20]}...") # log snippet of title
         db.session.add(new_todo_obj) 
         db.session.commit() 
         current_app.logger.info(f"TodoService: Successfully created todo with ID {new_todo_obj.id}.")
@@ -98,7 +98,7 @@ class TodoService:
         Returns:
             bool: True if the deletion was successful.
         """
-        todo_id = todo.id # Capture id before deletion
+        todo_id = todo.id # capture id before deletion
         current_app.logger.debug(f"TodoService: Deleting todo with ID {todo_id}.")
         db.session.delete(todo)
         db.session.commit()
