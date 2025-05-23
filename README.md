@@ -6,4 +6,4 @@
 flask run
 ```
 
-![Server Diagram](images/Live%20Server.png)
+![Live Server](images/Live%20Server.png)
